@@ -15,7 +15,6 @@ class DatabaseHelper(context:Context):SQLiteOpenHelper(context,NOMBRE_BASEDEDATO
         private const val APELLIDO_ESTUDIANTE="apellido_est"
         private const val CARNET_ESTUDIANTE="carnet_est"
 
-
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
