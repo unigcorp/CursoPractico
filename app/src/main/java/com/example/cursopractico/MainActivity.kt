@@ -2,12 +2,10 @@ package com.example.cursopractico
 
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
@@ -28,18 +26,22 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         val toogle = ActionBarDrawerToggle(this, menuDrawer, toolbar, R.string.open, R.string.close)
         menuDrawer.addDrawerListener(toogle)
         toogle.syncState()
+        if(savedInstanceState == null){
+            replaceFragment(EstudianteFragment())
+        }
 
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.id_android ->{
-                replaceFragment(AndroidFragment())
+                replaceFragment(EstudianteFragment())
             }
             R.id.id_scanner ->{
                 replaceFragment(ScannerFragment())
             }
         }
+        menuDrawer.closeDrawer(GravityCompat.START)
         return true
     }
 
