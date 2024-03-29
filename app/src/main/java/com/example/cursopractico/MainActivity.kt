@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
                 replaceFragment(EstudianteFragment())
             }
             R.id.id_scanner ->{
-                replaceFragment(ScannerFragment())
+                replaceFragment(CursoFragment())
             }
         }
         menuDrawer.closeDrawer(GravityCompat.START)
