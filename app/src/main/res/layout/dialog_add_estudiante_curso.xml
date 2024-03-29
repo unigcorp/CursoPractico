@@ -1,47 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="true"
-    android:focusable="true"
-    style="?attr/materialCardViewFilledStyle"
-    android:elevation="15dp"
-    android:layout_margin="5dp">
+    android:layout_margin="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:padding="10dp">
-
         <TextView
-            android:id="@+id/id_nombre_curso"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView"
-            style="@style/TextAppearance.AppCompat.Body2"/>
-
-
+            android:ems="10"
+            android:text="Inscripciones"/>
+        <Spinner
+            android:id="@+id/id_spinner_est"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"/>
+        <Spinner
+            android:id="@+id/id_spinner_curso"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/id_btn_editar"
-                style="?attr/borderlessButtonStyle"
+                android:id="@+id/id_btn_guardar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:text="Editar" />
-
+                android:text="Guardar"
+                android:layout_marginRight="5dp"/>
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/id_btn_eliminar"
-                style="?attr/borderlessButtonStyle"
+                android:id="@+id/id_btn_cancelar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Eliminar" />
+                android:text="Cancelar"/>
         </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

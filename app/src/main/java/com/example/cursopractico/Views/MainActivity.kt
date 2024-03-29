@@ -1,4 +1,4 @@
-package com.example.cursopractico
+package com.example.cursopractico.Views
 
 import android.os.Bundle
 import android.view.MenuItem
@@ -8,6 +8,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import com.example.cursopractico.R
+import com.example.cursopractico.Views.fragments.CursoFragment
+import com.example.cursopractico.Views.fragments.EstudianteCursoFragment
+import com.example.cursopractico.Views.fragments.EstudianteFragment
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelectedListener {
@@ -39,6 +43,9 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
             }
             R.id.id_scanner ->{
                 replaceFragment(CursoFragment())
+            }
+            R.id.id_phone ->{
+                replaceFragment(EstudianteCursoFragment())
             }
         }
         menuDrawer.closeDrawer(GravityCompat.START)
