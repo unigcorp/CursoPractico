@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cursopractico.repository.db.DatabaseHelper
 import com.example.cursopractico.R
-import com.example.cursopractico.Views.adapters.AdapterCurso
+import com.example.cursopractico.Views.adapter.AdapterCurso
 import com.example.cursopractico.Views.interfaces.InterfaceDialog
 import com.example.cursopractico.models.Curso
 import com.google.android.material.floatingactionbutton.FloatingActionButton

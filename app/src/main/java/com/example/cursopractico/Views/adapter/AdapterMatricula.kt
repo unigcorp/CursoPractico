@@ -1,19 +1,20 @@
-package com.example.cursopractico.adapter
+package com.example.cursopractico.Views.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import androidx.appcompat.view.menu.MenuView.ItemView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cursopractico.R
-import com.example.cursopractico.interfa.InterfaceDialog
-import com.example.cursopractico.model.Matricula
+import com.example.cursopractico.Views.interfaces.InterfaceDialog
+import com.example.cursopractico.models.Matricula
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
-class AdapterMatricula(private val interfaceDialog: InterfaceDialog,private val matriculaList:ArrayList<Matricula>):RecyclerView.Adapter<AdapterMatricula.MyViewMatricula>() {
+class AdapterMatricula(private val context: Context, private val interfaceDialog: InterfaceDialog, private val matriculaList:ArrayList<Matricula>):RecyclerView.Adapter<AdapterMatricula.MyViewMatricula>() {
 
     private lateinit var referencia_est: DatabaseReference
 
@@ -32,9 +33,10 @@ class AdapterMatricula(private val interfaceDialog: InterfaceDialog,private val 
         holder.nombreEstudiante.text = currenItem.nombre
         holder.cursoEstudiante.text = currenItem.nombre_curso
         holder.id_elimina.setOnClickListener {
-            referencia_est.child(currenItem.id_estudiante).child("curso").child(currenItem.id_curso).removeValue()
-            matriculaList.removeAt(position)
-            notifyDataSetChanged()
+//            referencia_est.child(currenItem.id_estudiante).child("curso").child(currenItem.id_curso).removeValue()
+//            matriculaList.removeAt(position)
+//            notifyDataSetChanged()
+            Toast.makeText(context, "hola desde eliminar", Toast.LENGTH_SHORT).show()
         }
     }
     class MyViewMatricula(itemView: View):RecyclerView.ViewHolder(itemView) {

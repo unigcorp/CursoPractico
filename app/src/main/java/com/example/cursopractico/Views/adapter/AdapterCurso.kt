@@ -1,4 +1,4 @@
-package com.example.cursopractico.adapter
+package com.example.cursopractico.Views.adapter
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cursopractico.DatabaseHelper
-import com.example.cursopractico.interfa.InterfaceDialog
+import com.example.cursopractico.repository.db.DatabaseHelper
 import com.example.cursopractico.R
-import com.example.cursopractico.model.Curso
+import com.example.cursopractico.Views.interfaces.InterfaceDialog
+import com.example.cursopractico.models.Curso
 
 class AdapterCurso(private val context: Context, private val interfaceDialog: InterfaceDialog, private val cursoList: ArrayList<Curso>):RecyclerView.Adapter<AdapterCurso.MyViewCurso>() {
 

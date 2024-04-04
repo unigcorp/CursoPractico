@@ -1,4 +1,4 @@
-package com.example.cursopractico.adapter
+package com.example.cursopractico.Views.adapter
 
 import android.app.AlertDialog
 import android.content.Context
@@ -9,10 +9,10 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cursopractico.DatabaseHelper
-import com.example.cursopractico.interfa.InterfaceDialog
+import com.example.cursopractico.repository.db.DatabaseHelper
 import com.example.cursopractico.R
-import com.example.cursopractico.model.Estudiante
+import com.example.cursopractico.Views.interfaces.InterfaceDialog
+import com.example.cursopractico.models.Estudiante
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
