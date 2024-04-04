@@ -1,7 +1,6 @@
 package com.example.cursopractico
 
 import android.app.Dialog
-import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -19,37 +18,95 @@ import com.example.cursopractico.adapter.AdapterEstudiante
 import com.example.cursopractico.interfa.InterfaceDialog
 import com.example.cursopractico.model.Estudiante
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
-class EstudianteFragment : Fragment(), InterfaceDialog {
+class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), InterfaceDialog {
 
     private  lateinit var btnFloat:FloatingActionButton
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var txtPrueba:TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var estudianteArratList:ArrayList<Estudiante>
+    private lateinit var adapter : AdapterEstudiante
+
+
+    private lateinit var referencia:DatabaseReference
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         val view =inflater.inflate(R.layout.fragment_estudiante, container, false)
+        referencia = FirebaseDatabase.getInstance().getReference("estudiante")
+
+
         btnFloat = view.findViewById(R.id.idfloatingActionButton)
         txtPrueba = view.findViewById(R.id.txtprueba)
         recyclerView = view.findViewById(R.id.idrecycler)
-        recyclerView.layoutManager = GridLayoutManager(context,2)
+        recyclerView.layoutManager = GridLayoutManager(mainActivity,2)
         estudianteArratList = arrayListOf()
-
         databaseHelper = DatabaseHelper(requireContext())
         btnFloat.setOnClickListener {
             openDialog()
             //databaseHelper.deleteDatabase(requireContext(),"myBase.db")
         }
-        mostrarEstudiantes()
+
+        //LISTAR CON FIREBASE
+        mostrarEstudiantesFirebase()
+        //LISTAR ESTTUDIANTES EN SQLITE
+        //mostrarEstudiantes()
         return view
     }
 
-    private fun mostrarEstudiantes() {
+    private fun mostrarEstudiantesFirebase() {
+        referencia.addValueEventListener(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()){
+                    estudianteArratList.clear()
+                    for(dataSnap in snapshot.children){
+                        val estudiante = dataSnap.getValue(Estudiante::class.java)
+//                        val hashMap = dataSnap.child("curso").getValue()
+//                        val id_est = dataSnap.child("id_est").getValue()
+//                        val nombre = dataSnap.child("nombre").getValue()
+//                        val apellido = dataSnap.child("apellido").getValue()
+//                        val carnet = dataSnap.child("carnet").getValue()
+//                        val estudiante = Estudiante(id_est.toString(),nombre.toString(),apellido.toString(),carnet.toString(),hashMap)
+                        estudianteArratList.add(estudiante!!)
+//                        Toast.makeText(context, "DATA "+hashMap, Toast.LENGTH_SHORT).show()
+                    }
+                    //recyclerView.adapter = AdapterEstudiante(databaseHelper,requireContext(),this@EstudianteFragment,estudianteArratList)
+                    setupList(estudianteArratList)
+
+//                    adapter = AdapterEstudiante(databaseHelper,requireContext(),this@EstudianteFragment,estudianteArratList)
+//                    recyclerView.adapter = adapter
+//                    adapter.notifyDataSetChanged()
+
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+    private fun setupList(estudianteArratList: ArrayList<Estudiante>) {
+        adapter = AdapterEstudiante(databaseHelper,mainActivity,this,estudianteArratList)
+
+
+        recyclerView.adapter = adapter
+        adapter.notifyDataSetChanged()
+
+    }
+
+    /*private fun mostrarEstudiantes() {
+       // databaseHelper.deleteDatabase(requireContext(),"myBase.db")
         val db:SQLiteDatabase = databaseHelper.readableDatabase
         var datos:String=""
         estudianteArratList.clear()
@@ -67,11 +124,9 @@ class EstudianteFragment : Fragment(), InterfaceDialog {
             setupList(estudianteArratList)
         }
 
-    }
+    }*/
 
-    private fun setupList(estudianteArratList: ArrayList<Estudiante>) {
-        recyclerView.adapter = AdapterEstudiante(databaseHelper,requireContext(),this,estudianteArratList)
-    }
+
 
     private fun openDialog() {
          val dialog = Dialog(requireContext())
@@ -92,12 +147,20 @@ class EstudianteFragment : Fragment(), InterfaceDialog {
             if(nombreEst.text.toString().isEmpty() && apellidoEst.text.toString().isEmpty() && carnetEst.text.toString().isEmpty()){
                 Toast.makeText(context, "DEBE COMPLETAR TODOS LOS CAMPOS", Toast.LENGTH_SHORT).show()
             }else{
-                databaseHelper.insertarEstudiante(nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
+
+                //INSERTAR PARA FIREBASE
+                insertarFirebase(nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
                 nombreEst.text.clear()
                 apellidoEst.text.clear()
                 carnetEst.text.clear()
                 dialog.dismiss()
-                mostrarEstudiantes()
+                //INSERTAR PARA SQLITE
+                /*databaseHelper.insertarEstudiante(nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
+                nombreEst.text.clear()
+                apellidoEst.text.clear()
+                carnetEst.text.clear()
+                dialog.dismiss()*/
+              //  mostrarEstudiantes()
             }
         }
 
@@ -105,8 +168,20 @@ class EstudianteFragment : Fragment(), InterfaceDialog {
         dialog.show()
     }
 
+    private fun insertarFirebase(nombre: String, apellido: String, carnet: String) {
+        val id_est = referencia.push().key!!
+        val estudiante = Estudiante(id_est,nombre,apellido,carnet)
+        referencia.child(id_est).setValue(estudiante).addOnSuccessListener {
+            Toast.makeText(context, "SE INSERTO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener{
+            error->
+            Toast.makeText(context, "error "+error.message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
     override fun onClickDialog(position: Int) {
-        val dialog = Dialog(requireContext())
+        val dialog = Dialog(mainActivity)
         dialog.setContentView(R.layout.dialog_add_estudiante)
         val ancho = ViewGroup.LayoutParams.MATCH_PARENT
         val alto = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -128,17 +203,37 @@ class EstudianteFragment : Fragment(), InterfaceDialog {
             if(nombreEst.text.toString().isEmpty() && apellidoEst.text.toString().isEmpty() && carnetEst.text.toString().isEmpty()){
                 Toast.makeText(context, "DEBE COMPLETAR TODOS LOS CAMPOS", Toast.LENGTH_SHORT).show()
             }else{
-                databaseHelper.actualizarEstudiante(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
+                //ACTUALIZAR EN FIREBASE
+                actualizarFirebase(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString(),estudianteArratList.get(position).curso)
+                //ACTUALIZAR EN SQLITE
+               //databaseHelper.actualizarEstudiante(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
                 nombreEst.text.clear()
                 apellidoEst.text.clear()
                 carnetEst.text.clear()
                 dialog.dismiss()
-                mostrarEstudiantes()
+                //mostrarEstudiantes()
             }
         }
 
 
         dialog.show()
+    }
+
+    private fun actualizarFirebase(
+        idEst: String,
+        nombre: String,
+        apellido: String,
+        carnet: String,
+        curso: HashMap<String, Boolean>?
+    ) {
+        val  estudiante = Estudiante(idEst,nombre,apellido,carnet,curso)
+        referencia.child(idEst).setValue(estudiante).addOnSuccessListener {
+            Toast.makeText(context, "SE ACTUALIZO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            error->
+            Toast.makeText(context, "ERROR "+error.message, Toast.LENGTH_SHORT).show()
+
+        }
     }
 
 

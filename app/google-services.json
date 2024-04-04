@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074077202728",
+    "project_id": "curso-firebase-2f6cd",
+    "storage_bucket": "curso-firebase-2f6cd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074077202728:android:8fb266a5e36fb39a48381d",
+        "android_client_info": {
+          "package_name": "com.example.cursopractico"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOU2XBIjzHlO4cBxgzCncFe_PqNlE0tkE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

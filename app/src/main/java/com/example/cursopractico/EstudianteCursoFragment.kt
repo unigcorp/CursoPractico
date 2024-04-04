@@ -17,12 +17,18 @@ import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cursopractico.adapter.AdapterMatricula
+import com.example.cursopractico.interfa.InterfaceDialog
 import com.example.cursopractico.model.Curso
 import com.example.cursopractico.model.Estudiante
 import com.example.cursopractico.model.Matricula
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
-class EstudianteCursoFragment : Fragment() {
+class EstudianteCursoFragment( private val mainActivity: MainActivity) : Fragment(),InterfaceDialog {
 
    private lateinit var recyclerView: RecyclerView
    private lateinit var databaseHelper: DatabaseHelper
@@ -30,9 +36,14 @@ class EstudianteCursoFragment : Fragment() {
    private lateinit var btn_float:FloatingActionButton
    private lateinit var estudianteList:ArrayList<Estudiante>
    private lateinit var cursoList:ArrayList<Curso>
-
+   private lateinit var adapter :AdapterMatricula
+   private lateinit var referencia_est: DatabaseReference
+    private lateinit var referencia_curso: DatabaseReference
+    private lateinit var referencia_matricula: DatabaseReference
    private var id_estudiante:String=""
     private var id_curso:String=""
+    var nombre:String=""
+    var nombreCurso:String=""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,8 +54,11 @@ class EstudianteCursoFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.idRecycler)
         btn_float = view.findViewById(R.id.idfloatingActionButton)
+        referencia_est = FirebaseDatabase.getInstance().getReference("estudiante")
+        referencia_curso = FirebaseDatabase.getInstance().getReference("curso")
+        referencia_matricula = FirebaseDatabase.getInstance().getReference("matricula")
         databaseHelper = DatabaseHelper(requireContext())
-        recyclerView.layoutManager = GridLayoutManager(context,2)
+        recyclerView.layoutManager = GridLayoutManager(mainActivity,2)
         matriculaList = arrayListOf()
         estudianteList = arrayListOf()
         cursoList = arrayListOf()
@@ -52,10 +66,114 @@ class EstudianteCursoFragment : Fragment() {
             openDialog()
 
         }
-        mostrarEstudiantes()
+        //FIREBASE
+        mostrarEstudiantesFirebase()
+        mostrarCursosFirebase()
+        mostrarMatriculadosFirebase()
+        //SQLITE
+        /*mostrarEstudiantes()
         mostrarCursos()
-        mostrarMatriculados()
+        mostrarMatriculados()*/
         return  view
+    }
+
+    private fun mostrarMatriculadosFirebase() {
+
+
+        referencia_est.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()){
+                    matriculaList.clear()
+                    for(estudianteSnapshot  in snapshot.children){
+                       if(estudianteSnapshot .child("curso").getValue() != null){
+                           val nombre = estudianteSnapshot .child("nombre").getValue(String::class.java)
+                           val id_estu = estudianteSnapshot.key
+                           //Toast.makeText(context, "nombre"+nombre, Toast.LENGTH_SHORT).show()
+                           // Obtener los cursos del estudiante
+                           val cursosSnapshot = estudianteSnapshot.child("curso")
+                         //  Toast.makeText(context, "id_estu"+id_estu, Toast.LENGTH_SHORT).show()
+                           for (cursoSnapshot in cursosSnapshot.children) {
+                               val cursoId = cursoSnapshot.key
+                               referencia_curso.child(cursoId.toString()).addValueEventListener(object:ValueEventListener{
+                                   override fun onDataChange(snapshot: DataSnapshot) {
+                                       val nombre_curso = snapshot .child("nombre_curso").getValue(String::class.java)
+//                                       Toast.makeText(context, "nombre curso"+nombre_curso, Toast.LENGTH_SHORT).show()
+                                       val matricula = Matricula(id_estu+cursoId,id_estu.toString(),cursoId.toString(),nombre,nombre_curso.toString())
+                                       matriculaList.add(matricula)
+                                       setup(matriculaList)
+//                                       adapter = AdapterMatricula(this@EstudianteCursoFragment,matriculaList)
+//                                       adapter.notifyDataSetChanged()
+//                                       recyclerView.adapter = adapter
+
+                                   }
+
+                                   override fun onCancelled(error: DatabaseError) {
+                                       TODO("Not yet implemented")
+                                   }
+
+                               })
+//                               Toast.makeText(context, "cursoId"+cursoId, Toast.LENGTH_SHORT).show()
+//                               adapter.notifyDataSetChanged()
+                           }
+                     //      adapter.notifyDataSetChanged()
+                       }
+                    }
+                  //  setup(matriculaList)
+//                    adapter.notifyDataSetChanged()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+    private fun setup(matriculaList: ArrayList<Matricula>) {
+        recyclerView.adapter = AdapterMatricula(this,matriculaList)
+    }
+
+
+    private fun mostrarCursosFirebase() {
+        referencia_curso.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()){
+                    cursoList.clear()
+                    for(dataSnap in snapshot.children){
+                        val data = dataSnap.getValue(Curso::class.java)
+                        cursoList.add(data!!)
+                    }
+
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+
+    private fun mostrarEstudiantesFirebase() {
+        referencia_est.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()){
+                    estudianteList.clear()
+                    for(dataSnap in snapshot.children){
+                        val data = dataSnap.getValue(Estudiante::class.java)
+                        estudianteList.add(data!!)
+                    }
+
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
     private fun mostrarMatriculados() {
@@ -70,9 +188,7 @@ class EstudianteCursoFragment : Fragment() {
         }
     }
 
-    private fun setup(matriculaList: ArrayList<Matricula>) {
-        recyclerView.adapter = AdapterMatricula(matriculaList)
-    }
+
 
     private fun mostrarCursos() {
         val db:SQLiteDatabase = databaseHelper.readableDatabase
@@ -113,6 +229,7 @@ class EstudianteCursoFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 //Toast.makeText(context, "ID "+estudianteList.get(position).id_est, Toast.LENGTH_SHORT).show()
                 id_estudiante = estudianteList.get(position).id_est
+                Toast.makeText(context, "ID_EST "+id_estudiante, Toast.LENGTH_SHORT).show()
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -137,15 +254,31 @@ class EstudianteCursoFragment : Fragment() {
             if (id_curso.isEmpty() && id_estudiante.isEmpty()){
                 Toast.makeText(context, "NO SE PUDO MATRICULAR", Toast.LENGTH_SHORT).show()
             }else{
-                databaseHelper.insertarMatricula(id_estudiante,id_curso)
+
+                //FIREBASE INSERTAR DATOS
+                insertaFirebase(id_estudiante,id_curso)
+                //SQLITE INSERTAR
+                /*databaseHelper.insertarMatricula(id_estudiante,id_curso)
                 Toast.makeText(context, "SE MATRICULO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
                 mostrarMatriculados()
-                dialog.dismiss()
+                dialog.dismiss()*/
             }
         }
 
 
         dialog.show()
+    }
+
+    private fun insertaFirebase(id_est:String,id_curso:String) {
+        val hashMap = HashMap<String,Boolean>()
+        //hashMap.put(id_curso,true)
+        referencia_est.child(id_est).child("curso").child(id_curso) .setValue(true).addOnSuccessListener {
+            Toast.makeText(context, "SE INSERTO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onClickDialog(position: Int) {
+        TODO("Not yet implemented")
     }
 
 

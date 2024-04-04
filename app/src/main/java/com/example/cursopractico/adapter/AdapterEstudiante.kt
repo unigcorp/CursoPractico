@@ -7,15 +7,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cursopractico.DatabaseHelper
 import com.example.cursopractico.interfa.InterfaceDialog
 import com.example.cursopractico.R
 import com.example.cursopractico.model.Estudiante
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class AdapterEstudiante(private var databaseHelper: DatabaseHelper, private var context: Context, private var interfaceDialog: InterfaceDialog, private var estudianteList:ArrayList<Estudiante>):RecyclerView.Adapter<AdapterEstudiante.MyViewEstudiante>() {
 
 
+
+    private lateinit var referencia:DatabaseReference
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewEstudiante {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_estudiante,parent,false)
         return MyViewEstudiante(view)
@@ -48,8 +53,18 @@ class AdapterEstudiante(private var databaseHelper: DatabaseHelper, private var 
     }
 
     private fun eliminaEstudiante(position: Int) {
-        databaseHelper.eliminarEstudiante(estudianteList.get(position).id_est)
-        estudianteList.removeAt(position)
+
+        //ELIMINAR ESTUDIANTE CON FIREBASE
+        referencia = FirebaseDatabase.getInstance().getReference("estudiante")
+        referencia.child(estudianteList.get(position).id_est).removeValue().addOnSuccessListener {
+            Toast.makeText(context, "SE ELIMINO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            error->
+            Toast.makeText(context, "ERROR "+error.message, Toast.LENGTH_SHORT).show()
+        }
+        //ELIMINAR ESTUDIANTE CON SQLITE
+//        databaseHelper.eliminarEstudiante(estudianteList.get(position).id_est)
+//        estudianteList.removeAt(position)
         notifyDataSetChanged()
     }
 

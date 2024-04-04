@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         menuDrawer.addDrawerListener(toogle)
         toogle.syncState()
         if(savedInstanceState == null){
-            replaceFragment(EstudianteFragment())
+            replaceFragment(EstudianteFragment(this))
         }
 
     }
@@ -39,13 +39,13 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.id_android ->{
-                replaceFragment(EstudianteFragment())
+                replaceFragment(EstudianteFragment(this))
             }
             R.id.id_scanner ->{
                 replaceFragment(CursoFragment())
             }
             R.id.id_phone ->{
-                replaceFragment(EstudianteCursoFragment())
+                replaceFragment(EstudianteCursoFragment(this))
             }
         }
         menuDrawer.closeDrawer(GravityCompat.START)
