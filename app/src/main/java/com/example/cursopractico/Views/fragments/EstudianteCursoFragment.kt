@@ -20,6 +20,7 @@ import com.example.cursopractico.repository.db.DatabaseHelper
 import com.example.cursopractico.R
 import com.example.cursopractico.Views.MainActivity
 import com.example.cursopractico.Views.adapter.AdapterMatricula
+import com.example.cursopractico.Views.adapter.AdapterPrueba
 import com.example.cursopractico.Views.interfaces.InterfaceDialog
 import com.example.cursopractico.models.Curso
 import com.example.cursopractico.models.Estudiante
@@ -82,48 +83,33 @@ class EstudianteCursoFragment( private val mainActivity: MainActivity) : Fragmen
     }
 
     private fun mostrarMatriculadosFirebase() {
-
-
-        referencia_est.addValueEventListener(object : ValueEventListener {
+        referencia_est.addValueEventListener(object :ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()){
+                if (snapshot.exists()){
                     matriculaList.clear()
-                    for(estudianteSnapshot  in snapshot.children){
-                       if(estudianteSnapshot .child("curso").getValue() != null){
-                           val nombre = estudianteSnapshot .child("nombre").getValue(String::class.java)
-                           val id_estu = estudianteSnapshot.key
-                           //Toast.makeText(context, "nombre"+nombre, Toast.LENGTH_SHORT).show()
-                           // Obtener los cursos del estudiante
-                           val cursosSnapshot = estudianteSnapshot.child("curso")
-                         //  Toast.makeText(context, "id_estu"+id_estu, Toast.LENGTH_SHORT).show()
-                           for (cursoSnapshot in cursosSnapshot.children) {
-                               val cursoId = cursoSnapshot.key
-                               referencia_curso.child(cursoId.toString()).addValueEventListener(object:ValueEventListener{
-                                   override fun onDataChange(snapshot: DataSnapshot) {
-                                       val nombre_curso = snapshot .child("nombre_curso").getValue(String::class.java)
-//                                       Toast.makeText(context, "nombre curso"+nombre_curso, Toast.LENGTH_SHORT).show()
-                                       val matricula = Matricula(id_estu+cursoId,id_estu.toString(),cursoId.toString(),nombre,nombre_curso.toString())
-                                       matriculaList.add(matricula)
-                                       setup(matriculaList)
-//                                       adapter = AdapterMatricula(this@EstudianteCursoFragment,matriculaList)
-//                                       adapter.notifyDataSetChanged()
-//                                       recyclerView.adapter = adapter
+                    for (estudianteSnapshop in snapshot.children){
+                        if (estudianteSnapshop.child("curso").getValue() !=null){
+                            val nombre_estudiante = estudianteSnapshop.child("nombre").getValue(String::class.java)
+                            val id_estudiante = estudianteSnapshop.key
+                            val cursoSnapshot = estudianteSnapshop.child("curso")
+                            for (cursoSnap in cursoSnapshot.children){
+                                val id_curso = cursoSnap.key
+                                referencia_curso.child(id_curso.toString()).addValueEventListener(object:ValueEventListener{
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                        val nombre_curso = snapshot.child("nombre_curso").getValue(String::class.java)
+                                        val matricula = Matricula(id_estudiante+id_curso,id_estudiante.toString(),id_curso.toString(),nombre_estudiante,nombre_curso.toString())
+                                        matriculaList.add(matricula)
+                                        setup(matriculaList)
+                                    }
 
-                                   }
+                                    override fun onCancelled(error: DatabaseError) {
+                                        TODO("Not yet implemented")
+                                    }
 
-                                   override fun onCancelled(error: DatabaseError) {
-                                       TODO("Not yet implemented")
-                                   }
-
-                               })
-//                               Toast.makeText(context, "cursoId"+cursoId, Toast.LENGTH_SHORT).show()
-//                               adapter.notifyDataSetChanged()
-                           }
-                     //      adapter.notifyDataSetChanged()
-                       }
+                                })
+                            }
+                        }
                     }
-                  //  setup(matriculaList)
-//                    adapter.notifyDataSetChanged()
                 }
             }
 
@@ -134,7 +120,8 @@ class EstudianteCursoFragment( private val mainActivity: MainActivity) : Fragmen
         })
     }
     private fun setup(matriculaList: ArrayList<Matricula>) {
-        recyclerView.adapter = AdapterMatricula(mainActivity,this,matriculaList)
+       // recyclerView.adapter = AdapterMatricula(mainActivity,this,matriculaList)
+        recyclerView.adapter = AdapterPrueba(requireContext(),matriculaList)
     }
 
 
@@ -261,6 +248,7 @@ class EstudianteCursoFragment( private val mainActivity: MainActivity) : Fragmen
 
                 //FIREBASE INSERTAR DATOS
                 insertaFirebase(id_estudiante,id_curso)
+                dialog.dismiss()
                 //SQLITE INSERTAR
                 /*databaseHelper.insertarMatricula(id_estudiante,id_curso)
                 Toast.makeText(context, "SE MATRICULO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
@@ -276,9 +264,15 @@ class EstudianteCursoFragment( private val mainActivity: MainActivity) : Fragmen
     private fun insertaFirebase(id_est:String,id_curso:String) {
         val hashMap = HashMap<String,Boolean>()
         //hashMap.put(id_curso,true)
-        referencia_est.child(id_est).child("curso").child(id_curso) .setValue(true).addOnSuccessListener {
+//        referencia_est.child(id_est).child("curso").child(id_curso) .setValue(true).addOnSuccessListener {
+//            Toast.makeText(context, "SE INSERTO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+        referencia_est.child(id_est).child("curso").child(id_curso).setValue(true).addOnSuccessListener {
             Toast.makeText(context, "SE INSERTO CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+
+        }.addOnFailureListener {
+            Toast.makeText(context, "OCURRIO UN ERROR", Toast.LENGTH_SHORT).show()
         }
+
     }
 
     override fun onClickDialog(position: Int) {

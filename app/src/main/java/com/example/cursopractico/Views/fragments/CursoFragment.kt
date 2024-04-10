@@ -20,6 +20,11 @@ import com.example.cursopractico.Views.adapter.AdapterCurso
 import com.example.cursopractico.Views.interfaces.InterfaceDialog
 import com.example.cursopractico.models.Curso
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
 class CursoFragment : Fragment(), InterfaceDialog {
@@ -27,13 +32,14 @@ class CursoFragment : Fragment(), InterfaceDialog {
     private lateinit var cursoList: ArrayList<Curso>
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var btnFloat:FloatingActionButton
-
+    private lateinit var referencia_curso: DatabaseReference
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_curso, container, false)
+        referencia_curso = FirebaseDatabase.getInstance().getReference("curso")
         recyclerView = view.findViewById(R.id.id_recyclerView)
         btnFloat = view.findViewById(R.id.idfloatingActionButton)
         databaseHelper = DatabaseHelper(requireContext())
@@ -46,7 +52,10 @@ class CursoFragment : Fragment(), InterfaceDialog {
             openDialog()
            // databaseHelper.deleteDatabase(requireContext(),"myBase.db")
         }
-        listarCursos()
+        //LISTAR CURSOS CON FIREBASE
+        mostrarCursosFirebase()
+        //LISTAR CURSOS CONSQLITE
+       // listarCursos()
         return  view
     }
 
@@ -113,13 +122,41 @@ class CursoFragment : Fragment(), InterfaceDialog {
             if(nombreCurso.text.toString().isEmpty()){
                 Toast.makeText(context, "DEBE COMPLETAR LOS CAMPOS", Toast.LENGTH_LONG).show()
             }else{
-                databaseHelper.actualizarCurso(cursoList.get(position).id_curso,nombreCurso.text.toString())
-                dialog.dismiss()
-                Toast.makeText(context, "DATOS ACTUALIZADOS CORRECTAMENTE", Toast.LENGTH_SHORT).show()
-                listarCursos()
+                editarConFirebase()
+
+//                databaseHelper.actualizarCurso(cursoList.get(position).id_curso,nombreCurso.text.toString())
+//                dialog.dismiss()
+//                Toast.makeText(context, "DATOS ACTUALIZADOS CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+//                listarCursos()
             }
         }
         dialog.show()
+    }
+
+    private fun editarConFirebase() {
+        TODO("Not yet implemented")
+    }
+
+    private fun mostrarCursosFirebase() {
+        referencia_curso.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()){
+                    cursoList.clear()
+                    for(dataSnap in snapshot.children){
+                        val data = dataSnap.getValue(Curso::class.java)
+                        cursoList.add(data!!)
+                    }
+                    setupList(cursoList)
+
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
 

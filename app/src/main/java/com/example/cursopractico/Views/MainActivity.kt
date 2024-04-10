@@ -12,12 +12,16 @@ import com.example.cursopractico.R
 import com.example.cursopractico.Views.fragments.CursoFragment
 import com.example.cursopractico.Views.fragments.EstudianteCursoFragment
 import com.example.cursopractico.Views.fragments.EstudianteFragment
+import com.google.android.material.bottomnavigation.BottomNavigationItemView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelectedListener {
     private lateinit var menuDrawer:DrawerLayout
     private lateinit var navigationView:NavigationView
     private lateinit var toolbar: Toolbar
+
+    private lateinit var botomNavigationItemView: BottomNavigationView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -25,6 +29,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         menuDrawer = findViewById(R.id.id_drawer)
         navigationView = findViewById(R.id.id_navigation)
         toolbar = findViewById(R.id.idtoolbar)
+        botomNavigationItemView = findViewById(R.id.id_bottomNavigationView)
         setSupportActionBar(toolbar)
         navigationView.setNavigationItemSelectedListener(this)
         val toogle = ActionBarDrawerToggle(this, menuDrawer, toolbar, R.string.open, R.string.close)
@@ -32,6 +37,23 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         toogle.syncState()
         if(savedInstanceState == null){
             replaceFragment(EstudianteFragment(this))
+        }
+        botomNavigationItemView.setOnItemSelectedListener {
+            when(it.itemId){
+                R.id.id_android ->{
+                    replaceFragment(EstudianteFragment(this))
+                    true
+                }
+                R.id.id_scanner ->{
+                    replaceFragment(CursoFragment())
+                    true
+                }
+                R.id.id_phone ->{
+                    replaceFragment(EstudianteCursoFragment(this))
+                    true
+                }
+                else -> false
+            }
         }
 
     }
@@ -51,6 +73,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         menuDrawer.closeDrawer(GravityCompat.START)
         return true
     }
+
 
     private fun replaceFragment(fragment: Fragment) {
         val fragmentManager = supportFragmentManager

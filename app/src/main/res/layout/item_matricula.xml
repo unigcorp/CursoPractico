@@ -17,10 +17,11 @@
 
         <TextView
             android:id="@+id/id_nombre"
+            style="@style/TextAppearance.AppCompat.Body2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView"
-            style="@style/TextAppearance.AppCompat.Body2"/>
+            android:text="TextView" />
+
         <TextView
             android:id="@+id/id_curso"
             android:layout_width="match_parent"
