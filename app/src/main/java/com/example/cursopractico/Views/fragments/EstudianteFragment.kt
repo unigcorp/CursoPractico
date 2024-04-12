@@ -14,6 +14,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import com.example.cursopractico.Constantes
 import com.example.cursopractico.R
 import com.example.cursopractico.Views.MainActivity
 import com.example.cursopractico.Views.adapter.AdapterEstudiante
@@ -26,6 +31,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.concurrent.locks.LockSupport
 
 
 class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), InterfaceDialog {
@@ -59,11 +67,39 @@ class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), I
             //databaseHelper.deleteDatabase(requireContext(),"myBase.db")
         }
 
+        //LISTAR CON PETICIONES HTTP
+        mostrarEstudiantesHttp()
         //LISTAR CON FIREBASE
-        mostrarEstudiantesFirebase()
+     //   mostrarEstudiantesFirebase()
         //LISTAR ESTTUDIANTES EN SQLITE
         //mostrarEstudiantes()
         return view
+    }
+    private fun mostrarEstudiantesHttp(){
+        val request = Volley.newRequestQueue(context)
+        val stringRequest  = object : StringRequest(Request.Method.GET,Constantes.DIRECCION_REMOTA+"mostrar_estudiantes.php",Response.Listener {
+            response->
+            Toast.makeText(context, "RESPONSE "+response, Toast.LENGTH_SHORT).show()
+            try {
+                estudianteArratList.clear()
+                val objeto = JSONObject(response)
+                val arrays = objeto.getJSONArray("results")
+                for (i in 0 until arrays.length()){
+                    val item = arrays.getJSONObject(i)
+                    val estudiante = Estudiante(item.getString("id_est"),item.getString("nombre"),item.getString("apellido"),item.getString("carnet"))
+                    estudianteArratList.add(estudiante)
+                }
+                setupList(estudianteArratList)
+
+
+            }catch (e:JSONException){
+                Toast.makeText(context, "exception "+e.message, Toast.LENGTH_SHORT).show()
+            }
+        },Response.ErrorListener {
+            error->
+        })
+        {}
+        request.add(stringRequest)
     }
 
     private fun mostrarEstudiantesFirebase() {
@@ -151,8 +187,10 @@ class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), I
                 Toast.makeText(context, "DEBE COMPLETAR TODOS LOS CAMPOS", Toast.LENGTH_SHORT).show()
             }else{
 
+                //INSERTAR PARA PETICIONES HTTP
+                insertarHttp(nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
                 //INSERTAR PARA FIREBASE
-                insertarFirebase(nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
+               // insertarFirebase(nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
                 nombreEst.text.clear()
                 apellidoEst.text.clear()
                 carnetEst.text.clear()
@@ -170,7 +208,26 @@ class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), I
         
         dialog.show()
     }
-
+    private  fun insertarHttp(nombre:String,apellido: String,carnet: String){
+        val request = Volley.newRequestQueue(context)
+        val stringRequest = object : StringRequest(Request.Method.POST,Constantes.DIRECCION_REMOTA+"ad_estudiantes.php",Response.Listener {
+            response->
+            Toast.makeText(context, "SE INSERTARON LOS DATOS CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+            mostrarEstudiantesHttp()
+        },Response.ErrorListener {
+            error->
+            Toast.makeText(context, "OCURRIO ALGUN ERROR", Toast.LENGTH_SHORT).show()
+        }){
+            override fun getParams(): Map<String, String>? {
+                val parametros = HashMap<String,String>()
+                parametros.put("nombre",nombre)
+                parametros.put("apellido",apellido)
+                parametros.put("carnet",carnet)
+                return parametros
+            }
+        }
+        request.add(stringRequest)
+    }
     private fun insertarFirebase(nombre: String, apellido: String, carnet: String) {
         val id_est = referencia.push().key!!
         val estudiante = Estudiante(id_est,nombre,apellido,carnet)
@@ -206,8 +263,10 @@ class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), I
             if(nombreEst.text.toString().isEmpty() && apellidoEst.text.toString().isEmpty() && carnetEst.text.toString().isEmpty()){
                 Toast.makeText(context, "DEBE COMPLETAR TODOS LOS CAMPOS", Toast.LENGTH_SHORT).show()
             }else{
+                // ACTUALIZAR HTTP
+                actualizarHttp(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
                 //ACTUALIZAR EN FIREBASE
-                actualizarFirebase(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString(),estudianteArratList.get(position).curso)
+               // actualizarFirebase(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString(),estudianteArratList.get(position).curso)
                 //ACTUALIZAR EN SQLITE
                //databaseHelper.actualizarEstudiante(estudianteArratList.get(position).id_est,nombreEst.text.toString(),apellidoEst.text.toString(),carnetEst.text.toString())
                 nombreEst.text.clear()
@@ -220,6 +279,28 @@ class EstudianteFragment(private val mainActivity: MainActivity) : Fragment(), I
 
 
         dialog.show()
+    }
+    private fun actualizarHttp(id_est:String,nombre: String,apellido: String,carnet: String){
+        val request = Volley.newRequestQueue(context)
+        val stringRequest = object :StringRequest(Request.Method.POST,Constantes.DIRECCION_REMOTA+"ed_estudiantes.php",Response.Listener {
+            response->
+            Toast.makeText(context, "SE ACTUALIZARON LOS DATOS CORRECTAMENTE", Toast.LENGTH_SHORT).show()
+            mostrarEstudiantesHttp()
+        },Response.ErrorListener {
+            error->
+            Toast.makeText(context, "ALGO PASO "+error.message, Toast.LENGTH_SHORT).show()
+        })
+        {
+            override fun getParams(): Map<String, String>? {
+                val parametros = HashMap<String,String>()
+                parametros.put("id_est",id_est)
+                parametros.put("nombre",nombre)
+                parametros.put("apellido",apellido)
+                parametros.put("carnet",carnet)
+                return parametros
+            }
+        }
+        request.add(stringRequest)
     }
 
     private fun actualizarFirebase(
